@@ -1,0 +1,20 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    level: 8
+
+    # Analyses first-party code only.
+    #
+    # config/ is excluded because the published vendor defaults call env() in
+    # positions PHPStan reads as bool|string, and rewriting third-party config
+    # stubs to satisfy the analyser buys nothing.
+    #
+    # tests/ is excluded because Pest's higher-order and arch() APIs are fluent
+    # facades that PHPStan cannot follow; the suite itself is the check there.
+    paths:
+        - app
+        - database
+        - routes
+
+    treatPhpDocTypesAsCertain: false
