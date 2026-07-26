@@ -1,0 +1,34 @@
+{
+  "site_id": "MLB",
+  "paging": { "total": 3, "primary_results": 3, "offset": 0, "limit": 2 },
+  "results": [
+    {
+      "id": "MLB1234567890",
+      "title": "Cafeteira Elétrica Inox 220V Café Expresso",
+      "price": 249.9,
+      "original_price": 399.9,
+      "available_quantity": 12,
+      "sold_quantity": 340,
+      "permalink": "https://produto.mercadolivre.com.br/MLB-1234567890-cafeteira",
+      "thumbnail": "https://http2.mlstatic.com/D_811718-MLB-I.jpg",
+      "category_id": "MLB1051",
+      "shipping": { "free_shipping": true, "logistic_type": "fulfillment" },
+      "attributes": [
+        { "id": "BRAND", "name": "Marca", "value_name": "Mondial" },
+        { "id": "MODEL", "name": "Modelo", "value_name": "C-08" }
+      ],
+      "reviews": { "rating_average": 4.6, "total": 812 }
+    },
+    {
+      "id": "MLB9876543210",
+      "title": "Liquidificador Turbo 1200W Preto",
+      "price": 189.0,
+      "available_quantity": 0,
+      "permalink": "https://produto.mercadolivre.com.br/MLB-9876543210-liquidificador?utm=x",
+      "thumbnail": "https://http2.mlstatic.com/D_922819-MLB-I.jpg",
+      "category_id": "MLB1051",
+      "shipping": { "free_shipping": false },
+      "attributes": [{ "id": "BRAND", "value_name": "Philco" }]
+    }
+  ]
+}

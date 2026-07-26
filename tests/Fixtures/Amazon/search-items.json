@@ -1,0 +1,33 @@
+{
+  "SearchResult": {
+    "TotalResultCount": 2,
+    "Items": [
+      {
+        "ASIN": "B08XYZ1234",
+        "DetailPageURL": "https://www.amazon.com.br/dp/B08XYZ1234?tag=promohub-20",
+        "Images": { "Primary": { "Large": { "URL": "https://m.media-amazon.com/images/I/71abc.jpg", "Height": 500, "Width": 500 } } },
+        "ItemInfo": {
+          "Title": { "DisplayValue": "Fone de Ouvido Bluetooth Cancelamento de Ruído" },
+          "ByLineInfo": { "Brand": { "DisplayValue": "JBL" } }
+        },
+        "BrowseNodeInfo": { "BrowseNodes": [{ "Id": "16209062011", "DisplayName": "Eletrônicos" }] },
+        "Offers": {
+          "Listings": [
+            {
+              "Price": { "Amount": 349.0, "Currency": "BRL", "DisplayAmount": "R$ 349,00" },
+              "SavingBasis": { "Amount": 599.0, "Currency": "BRL" },
+              "DeliveryInfo": { "IsPrimeEligible": true, "IsFreeShippingEligible": true },
+              "Availability": { "Type": "Now" }
+            }
+          ]
+        },
+        "CustomerReviews": { "Count": 2410, "StarRating": { "Value": 4.5 } }
+      },
+      {
+        "ASIN": "B09NOOFFER",
+        "DetailPageURL": "https://www.amazon.com.br/dp/B09NOOFFER",
+        "ItemInfo": { "Title": { "DisplayValue": "Produto Sem Oferta Disponível" } }
+      }
+    ]
+  }
+}

@@ -64,11 +64,33 @@ return [
             'after_commit' => false,
         ],
 
+        /*
+         * retry_after must exceed the longest job timeout on this connection, or
+         * the queue hands a still-running job to a second worker and the work is
+         * done twice. The pipeline's short jobs cap out at 120s.
+         */
         'redis' => [
             'driver' => 'redis',
             'connection' => env('REDIS_QUEUE_CONNECTION', 'default'),
             'queue' => env('REDIS_QUEUE', 'default'),
-            'retry_after' => (int) env('REDIS_QUEUE_RETRY_AFTER', 90),
+            'retry_after' => (int) env('REDIS_QUEUE_RETRY_AFTER', 180),
+            'block_for' => null,
+            'after_commit' => false,
+        ],
+
+        /*
+         * A separate connection for capture runs, which page through an entire
+         * catalogue and legitimately take minutes.
+         *
+         * Sharing one connection would force this long retry_after on every queue,
+         * so a crashed publish worker would leave its message stranded for fifteen
+         * minutes instead of three.
+         */
+        'redis_long' => [
+            'driver' => 'redis',
+            'connection' => env('REDIS_QUEUE_CONNECTION', 'default'),
+            'queue' => env('REDIS_QUEUE', 'default'),
+            'retry_after' => (int) env('REDIS_LONG_QUEUE_RETRY_AFTER', 900),
             'block_for' => null,
             'after_commit' => false,
         ],

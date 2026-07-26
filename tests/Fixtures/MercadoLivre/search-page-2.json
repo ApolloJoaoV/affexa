@@ -1,0 +1,19 @@
+{
+  "site_id": "MLB",
+  "paging": { "total": 3, "primary_results": 3, "offset": 2, "limit": 2 },
+  "results": [
+    {
+      "id": "MLB5555555555",
+      "title": "Air Fryer 4L Sem Óleo",
+      "price": 329.99,
+      "original_price": 549.99,
+      "available_quantity": 5,
+      "permalink": "https://produto.mercadolivre.com.br/MLB-5555555555-airfryer",
+      "thumbnail": "https://http2.mlstatic.com/D_733111-MLB-I.jpg",
+      "category_id": "MLB1051",
+      "shipping": { "free_shipping": true },
+      "attributes": [{ "id": "BRAND", "value_name": "Mondial" }],
+      "reviews": { "rating_average": 4.2, "total": 55 }
+    }
+  ]
+}

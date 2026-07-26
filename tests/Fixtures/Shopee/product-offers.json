@@ -1,0 +1,28 @@
+{
+  "data": {
+    "productOfferV2": {
+      "nodes": [
+        {
+          "itemId": 22334455,
+          "productName": "Panela de Pressão Elétrica 5L",
+          "price": "199.90",
+          "priceDiscountRate": 50,
+          "imageUrl": "https://cf.shopee.com.br/file/abc123",
+          "productLink": "https://shopee.com.br/product/1/22334455",
+          "offerLink": "https://s.shopee.com.br/AbCdEf",
+          "ratingStar": "4.8",
+          "sales": 1520,
+          "shopName": "Casa e Cozinha Oficial",
+          "productCatIds": [11029, 11030]
+        },
+        {
+          "itemId": 99887766,
+          "productName": "Item Sem Preço",
+          "priceDiscountRate": 0,
+          "productLink": "https://shopee.com.br/product/1/99887766"
+        }
+      ],
+      "pageInfo": { "page": 1, "limit": 50, "hasNextPage": false }
+    }
+  }
+}

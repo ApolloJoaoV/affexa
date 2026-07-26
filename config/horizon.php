@@ -96,8 +96,23 @@ return [
     |
     */
 
+    /*
+     * Thresholds for the LongWaitDetected alert, per queue rather than global.
+     *
+     * A capture waiting five minutes is unremarkable; a publication waiting five
+     * minutes means subscribers are getting stale prices, so it is alerted on far
+     * sooner.
+     */
     'waits' => [
         'redis:default' => 60,
+        'redis_long:fetch' => 600,
+        'redis:process' => 300,
+        'redis:evaluate' => 300,
+        'redis:message' => 120,
+        'redis:card' => 180,
+        'redis:publish' => 60,
+        'redis:history' => 600,
+        'redis:maintenance' => 900,
     ],
 
     /*
@@ -196,35 +211,152 @@ return [
     |
     */
 
+    /*
+     * One supervisor per stage of the pipeline, because the stages have nothing in
+     * common operationally: capture is bound by a marketplace's rate limit,
+     * processing by the database, card rendering by memory, and publishing by
+     * WhatsApp's own throughput.
+     *
+     * A single supervisor with all queues would let a burst of card rendering
+     * starve publishing, and Horizon does not honour queue order under
+     * balance: auto — separate named supervisors are the documented way to
+     * express priority.
+     *
+     * Every supervisor's timeout sits above its jobs' own timeout and below the
+     * connection's retry_after, so a job is never retried while still running.
+     */
     'defaults' => [
-        'supervisor-1' => [
-            'connection' => 'redis',
-            'queue' => ['default'],
+        /*
+         * Capture. Low concurrency on purpose: parallelism here does not help,
+         * because the token bucket, not the worker count, decides how fast a
+         * marketplace can be called.
+         */
+        'supervisor-fetch' => [
+            'connection' => 'redis_long',
+            'queue' => ['fetch'],
             'balance' => 'auto',
             'autoScalingStrategy' => 'time',
-            'maxProcesses' => 1,
+            'minProcesses' => 1,
+            'maxProcesses' => 3,
             'maxTime' => 0,
             'maxJobs' => 0,
-            'memory' => 128,
-            'tries' => 1,
-            'timeout' => 60,
+            'memory' => 256,
+            'tries' => 3,
+            'timeout' => 660,
+            'nice' => 10,
+        ],
+
+        /*
+         * Persistence of captured batches, and the history writes. The widest pool:
+         * this is where the daily volume actually lands.
+         */
+        'supervisor-process' => [
+            'connection' => 'redis',
+            'queue' => ['process', 'history'],
+            'balance' => 'auto',
+            'autoScalingStrategy' => 'time',
+            'minProcesses' => 2,
+            'maxProcesses' => 12,
+            'maxTime' => 0,
+            'maxJobs' => 0,
+            'memory' => 256,
+            'tries' => 3,
+            'timeout' => 150,
+            'nice' => 5,
+        ],
+
+        'supervisor-evaluate' => [
+            'connection' => 'redis',
+            'queue' => ['evaluate'],
+            'balance' => 'auto',
+            'autoScalingStrategy' => 'time',
+            'minProcesses' => 1,
+            'maxProcesses' => 6,
+            'maxTime' => 0,
+            'maxJobs' => 0,
+            'memory' => 256,
+            'tries' => 3,
+            'timeout' => 120,
+            'nice' => 5,
+        ],
+
+        /*
+         * Message rendering and card generation. Imagick is the memory hog of the
+         * system, hence the far larger allowance and the modest process cap.
+         */
+        'supervisor-content' => [
+            'connection' => 'redis',
+            'queue' => ['message', 'card'],
+            'balance' => 'auto',
+            'autoScalingStrategy' => 'time',
+            'minProcesses' => 1,
+            'maxProcesses' => 4,
+            'maxTime' => 0,
+            'maxJobs' => 0,
+            'memory' => 768,
+            'tries' => 3,
+            'timeout' => 150,
+            'nice' => 10,
+        ],
+
+        /*
+         * Publishing. Deliberately near-serial: the bottleneck is the WhatsApp
+         * Business API's rate, not CPU, and extra workers would only convert into
+         * provider rejections.
+         *
+         * balance is false so the pool stays exactly this size, and its nice value
+         * is the lowest in the system so this queue is never starved by the bulk
+         * stages. It is 0 rather than negative because only root may raise a
+         * process's priority: the ordering is achieved by deprioritising the
+         * others instead.
+         */
+        'supervisor-publish' => [
+            'connection' => 'redis',
+            'queue' => ['publish'],
+            'balance' => false,
+            'minProcesses' => 1,
+            'maxProcesses' => 2,
+            'maxTime' => 0,
+            'maxJobs' => 0,
+            'memory' => 256,
+            'tries' => 5,
+            'timeout' => 120,
             'nice' => 0,
+        ],
+
+        'supervisor-maintenance' => [
+            'connection' => 'redis',
+            'queue' => ['maintenance', 'default'],
+            'balance' => 'auto',
+            'autoScalingStrategy' => 'time',
+            'minProcesses' => 1,
+            'maxProcesses' => 2,
+            'maxTime' => 0,
+            'maxJobs' => 0,
+            'memory' => 256,
+            'tries' => 2,
+            'timeout' => 120,
+            'nice' => 15,
         ],
     ],
 
     'environments' => [
         'production' => [
-            'supervisor-1' => [
-                'maxProcesses' => 10,
-                'balanceMaxShift' => 1,
-                'balanceCooldown' => 3,
-            ],
+            'supervisor-fetch' => ['maxProcesses' => 4, 'balanceMaxShift' => 1, 'balanceCooldown' => 5],
+            'supervisor-process' => ['maxProcesses' => 24, 'balanceMaxShift' => 2, 'balanceCooldown' => 3],
+            'supervisor-evaluate' => ['maxProcesses' => 12, 'balanceMaxShift' => 2, 'balanceCooldown' => 3],
+            'supervisor-content' => ['maxProcesses' => 6, 'balanceMaxShift' => 1, 'balanceCooldown' => 5],
+            'supervisor-publish' => ['maxProcesses' => 2],
+            'supervisor-maintenance' => ['maxProcesses' => 3],
         ],
 
         'local' => [
-            'supervisor-1' => [
-                'maxProcesses' => 3,
-            ],
+            'supervisor-fetch' => ['maxProcesses' => 1],
+            'supervisor-process' => ['maxProcesses' => 3],
+            'supervisor-evaluate' => ['maxProcesses' => 2],
+            'supervisor-content' => ['maxProcesses' => 1],
+            'supervisor-publish' => ['maxProcesses' => 1],
+            'supervisor-maintenance' => ['maxProcesses' => 1],
         ],
     ],
 
